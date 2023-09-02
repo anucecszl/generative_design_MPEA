@@ -58,17 +58,10 @@ def train_and_evaluate_regressor(mechanical_property, split, rand_dataset):
 
 if __name__ == "__main__":
     split = 0.1
-    rand_dataset = 44
-    all_acc_array = np.zeros(4)
-    n = 1000
-    for rand_dataset in range(n):
-        print(rand_dataset)
-        acc_array = np.zeros(4)
-        for i in range(len(mechanical_properties)):
-            mechanical_property = mechanical_properties[i]
-            acc_array[i] = train_and_evaluate_regressor(mechanical_property, split, rand_dataset)
-        all_acc_array += acc_array
+    rand_dataset = 49
+    for i in range(len(mechanical_properties)):
+        mechanical_property = mechanical_properties[i]
+        train_and_evaluate_regressor(mechanical_property, split, rand_dataset)
 
-    print(all_acc_array/n)
 
 
