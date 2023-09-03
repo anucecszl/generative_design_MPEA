@@ -1,0 +1,9 @@
+streamlit
+numpy
+joblib
+torch
+pandas
+openpyxl
+scikit-learn==0.24.2
+pymoo
+matplotlib
