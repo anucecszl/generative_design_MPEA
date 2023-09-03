@@ -77,11 +77,11 @@ start_optimization = st.button("Start Optimization")
 if start_optimization:
     with st.spinner('Optimizing...'):
         # Load data and models
-        element_names = pd.read_excel('MPEA_parsed_dataset.xlsx').columns.values[
+        element_names = pd.read_excel('streamlit/MPEA_parsed_dataset.xlsx').columns.values[
                         14:46]
-        process_names = pd.read_excel('MPEA_parsed_dataset.xlsx').columns.values[
+        process_names = pd.read_excel('streamlit/MPEA_parsed_dataset.xlsx').columns.values[
                         46:53]
-        dataset_df = pd.read_excel('MPEA_parsed_dataset.xlsx')
+        dataset_df = pd.read_excel('streamlit/MPEA_parsed_dataset.xlsx')
         data_np = dataset_df.to_numpy()
 
         comp_data = data_np[:, 14:53].astype(float)
@@ -90,13 +90,13 @@ if start_optimization:
         feature_names = dataset_df.columns.values[14:53]
 
         generator = Generator()
-        generator.load_state_dict(torch.load('generator_net_MPEA.pt'))
+        generator.load_state_dict(torch.load('streamlit/generator_net_MPEA.pt'))
         generator.eval()
 
-        yield_regressor = load('yield_regressor.joblib')
-        tensile_regressor = load('tensile_regressor.joblib')
-        elongation_regressor = load('elongation_regressor.joblib')
-        hard_regressor = load('hardness_regressor.joblib')
+        yield_regressor = load('streamlit/yield_regressor.joblib')
+        tensile_regressor = load('streamlit/tensile_regressor.joblib')
+        elongation_regressor = load('streamlit/elongation_regressor.joblib')
+        hard_regressor = load('streamlit/hardness_regressor.joblib')
 
         # Optimize
         problem = AlloyOptimizationProblem()
@@ -151,10 +151,10 @@ if start_optimization:
 
         # Predict phases and mechanical properties for generated alloys
         phase_array = np.zeros((optimal_alloys.shape[0], 4))
-        classifier_FCC = load('FCC_classifier.joblib')
-        classifier_BCC = load('BCC_classifier.joblib')
-        classifier_HCP = load('HCP_classifier.joblib')
-        classifier_IM = load('IM_classifier.joblib')
+        classifier_FCC = load('streamlit/FCC_classifier.joblib')
+        classifier_BCC = load('streamlit/BCC_classifier.joblib')
+        classifier_HCP = load('streamlit/HCP_classifier.joblib')
+        classifier_IM = load('streamlit/IM_classifier.joblib')
 
         phase_array[:, 0] = classifier_FCC.predict(optimal_alloys)
         phase_array[:, 1] = classifier_BCC.predict(optimal_alloys)
