@@ -155,7 +155,7 @@ if __name__ == "__main__":
     loader = DataLoader(dataset=al_data_set, batch_size=5, shuffle=True)
 
     # Epochs for training
-    for epoch in range(5000):
+    for epoch in range(10000):
         # Initialize losses
         loss_d_real = 0
         loss_d_fake = 0
@@ -210,10 +210,7 @@ if __name__ == "__main__":
         balance = loss_d_real / (loss_d_real + loss_d_fake)
 
         # Logging
-        if epoch < 5000 or epoch % 20 == 0:
-            print(epoch, "Discriminator balance:", balance, "D_loss:", total_d_loss)
-
-        if epoch < 10 or epoch % 50 == 0:
+        if epoch < 500 or epoch % 20 == 0:
             print(epoch, "Discriminator balance:", balance, "D_loss:", total_d_loss)
 
     # Save the trained Generator model
