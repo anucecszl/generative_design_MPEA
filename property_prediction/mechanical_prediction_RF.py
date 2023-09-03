@@ -29,7 +29,7 @@ def create_training_set(test_size, random_state, mechanical):
     mech_array = mech_data.to_numpy()
 
     # Identify the features and target for prediction
-    composition = mech_array[:, 10:53].astype(float)
+    composition = mech_array[:, 14:53].astype(float)
     target = mech_array[:, target_number].astype(float)
 
     # Identify and remove the entries containing NaN target values
