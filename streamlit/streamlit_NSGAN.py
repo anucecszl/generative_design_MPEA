@@ -15,12 +15,11 @@ import matplotlib.pyplot as plt
 # Define process name to description mapping
 process_name_mapping = {
     'process_1': "As-cast processes, inclusive of 'arc-melted'",
-    'process_2': "Arc-melted processes followed by artificial aging, encompassing heat treated or aged alloys and "
-                 "those subjected to thermo-mechanical processing",
+    'process_2': "Arc-melted processes followed by artificial aging",
     'process_3': "Arc-melted processes followed by annealing",
     'process_4': "Powder processing techniques (powder metallurgy)",
-    'process_5': "Novel synthesis techniques (i.e., ball milling, (spark plasma) sintering)",
-    'process_6': "Arc-melted processes followed by wrought processing techniques (i.e., rolled)",
+    'process_5': "Novel synthesis techniques (i.e., ball milling,)",
+    'process_6': "Arc-melted processes followed by wrought processing techniques",
     'process_7': "Cryogenic treatments"
 }
 
