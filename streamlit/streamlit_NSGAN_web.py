@@ -198,6 +198,31 @@ if start_optimization:
         ax2.set_title("Yield strength vs Elongation")
         st.pyplot(fig2)
 
+        # Create DataFrame from the results
+        results_df = pd.DataFrame({
+            'Alloy Composition': alloy_names,
+            'Processing Method': [process_name_mapping.get(process, "Unknown") for process in process_name_list],
+            'Predicted Phase': phase_name_list,
+            'Hardness (HV)': property_array[:, 3],
+            'Tensile Strength (MPa)': property_array[:, 1],
+            'Yield Strength (MPa)': property_array[:, 2],
+            'Elongation (%)': property_array[:, 0]
+        })
+
+        # Convert the DataFrame to Excel format (in-memory)
+        import io
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            results_df.to_excel(writer, sheet_name='Optimal Alloys', index=False)
+
+        # Add a button to allow downloading of the results as an Excel file
+        st.download_button(
+            label="Download Results as Excel",
+            data=output.getvalue(),
+            file_name="optimal_alloys_results.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        
         # Display the results
         st.subheader("Optimal Alloys:")
         for i in range(len(alloy_names)):
