@@ -198,30 +198,27 @@ if start_optimization:
         ax2.set_title("Yield strength vs Elongation")
         st.pyplot(fig2)
 
-        # Create DataFrame from the results
-        results_df = pd.DataFrame({
+       # save the result to DataFrame
+        result_df = pd.DataFrame({
             'Alloy Composition': alloy_names,
-            'Processing Method': [process_name_mapping.get(process, "Unknown") for process in process_name_list],
+            'Processing Method': [process_name_mapping.get(process_name_list[i], "Unknown") for i in range(len(alloy_names))],
             'Predicted Phase': phase_name_list,
-            'Hardness (HV)': property_array[:, 3],
-            'Tensile Strength (MPa)': property_array[:, 1],
-            'Yield Strength (MPa)': property_array[:, 2],
-            'Elongation (%)': property_array[:, 0]
+            'Hardness HV': property_array[:, 3],
+            'Tensile Strength MPa': property_array[:, 1],
+            'Yield Strength MPa': property_array[:, 2],
+            'Elongation %': property_array[:, 0]
         })
 
-        # Convert the DataFrame to Excel format (in-memory)
-        import io
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            results_df.to_excel(writer, sheet_name='Optimal Alloys', index=False)
-
-        # Add a button to allow downloading of the results as an Excel file
-        st.download_button(
-            label="Download Results as Excel",
-            data=output.getvalue(),
-            file_name="optimal_alloys_results.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        # create the download button
+        if st.button("Download Results as Excel"):
+            output_path = "optimization_results.xlsx"
+            result_df.to_excel(output_path, index=False, engine='openpyxl')
+            
+            with open(output_path, "rb") as f:
+                bytes = f.read()
+                b64 = base64.b64encode(bytes).decode()
+                href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
+                st.markdown(href, unsafe_allow_html=True)
         
         # Display the results
         st.subheader("Optimal Alloys:")
