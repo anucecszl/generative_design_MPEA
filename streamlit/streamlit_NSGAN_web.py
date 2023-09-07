@@ -64,7 +64,8 @@ st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
 to generate optimized element compositions, processing conditions, 
 and predicted phase and mechanical properties (including hardness, tensile strength, yield strength, elongation) for 
-multi-principle element alloys. 
+multi-principle element alloys. The model conducts multi-objective optimization based on tensile strength, yield 
+strength, and elongation to refine the population of solutions.
 
 The "Population Size" specifies the number of candidate solutions explored in each 
 generation and impacts the diversity of solutions; the "Number of Generations" indicates how many iterative cycles 
