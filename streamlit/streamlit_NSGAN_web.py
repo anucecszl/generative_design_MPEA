@@ -56,13 +56,19 @@ class AlloyOptimizationProblem(Problem):
         out["F"] = np.column_stack([f1, f2])
 
 
-st.markdown("<h3 style='text-align: center; color: black;'>Alloy Generation and Property Prediction</h1>",
+st.markdown("<h3 style='text-align: center; color: black;'>Multi Principle Element Alloy Generation and Property Prediction</h3>",
             unsafe_allow_html=True)
 st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
 to generate optimized element compositions, processing conditions, 
 and predicted phase and mechanical properties (including hardness, tensile strength, yield strength, elongation) for 
 multi-principle element alloys. 
+
+The "Population Size" specifies the number of candidate solutions explored in each 
+generation and impacts the diversity of solutions; the "Number of Generations" indicates how many iterative cycles 
+the algorithm will undergo, influencing the quality and convergence of solutions; and the "Random Seed Value" is 
+utilized to initialize the random number generator, allowing for reproducibility in the optimization process. The 
+ArXiv paper can be access at: 'link'
 """)
 # Create a layout with three columns
 cols = st.columns(3)
@@ -70,10 +76,14 @@ cols = st.columns(3)
 # Assign each input to a different column
 pop_size = cols[0].number_input("Population Size", min_value=10, max_value=50, value=20)
 n_gen = cols[1].number_input("Number of Generations", min_value=5, max_value=500, value=100)
-seed_value = cols[2].number_input("Random Seed Value", min_value=0, max_value=None, value=1)
+seed_value = cols[2].number_input("Random Seed Value", min_value=0, max_value=None, value=2)
 
 start_optimization = st.button("Start Optimization")
 
+# 检查session_state中是否存在结果DataFrame
+if "result_df" not in st.session_state:
+    st.session_state.result_df = None
+    
 if start_optimization:
     with st.spinner('Optimizing...'):
         # Load data and models
@@ -192,16 +202,38 @@ if start_optimization:
         ax2.set_title("Yield strength vs Elongation")
         st.pyplot(fig2)
 
-        # Display the results
-        st.subheader("Optimal Alloys:")
-        for i in range(len(alloy_names)):
-            st.markdown(f"**Alloy {i + 1}:**")
-            st.write(f"Composition: {alloy_names[i]}")
-            # Mapping the process name to its description
-            detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
-            st.write(f"Process Method: {detailed_process_name}")
-            st.write(
-                f"Predicted phase: {phase_name_list[i]}")
-            st.write(
-                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
+# save the result to DataFrame
+result_df = pd.DataFrame({
+    'Alloy Composition': alloy_names,
+    'Processing Method': [process_name_mapping.get(process_name_list[i], "Unknown") for i in range(len(alloy_names))],
+    'Predicted Phase': phase_name_list,
+    'Hardness HV': property_array[:, 3],
+    'Tensile Strength MPa': property_array[:, 1],
+    'Yield Strength MPa': property_array[:, 2],
+    'Elongation %': property_array[:, 0]
+})
+
+# create the download button
+if st.button("Download Results as Excel") and st.session_state.result_df is not None:
+    output_path = "optimization_results.xlsx"
+    st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
+    
+    with open(output_path, "rb") as f:
+        bytes = f.read()
+        b64 = base64.b64encode(bytes).decode()
+        href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
+        st.markdown(href, unsafe_allow_html=True)
+        
+# Display the results
+st.subheader("Optimal Alloys:")
+for i in range(len(alloy_names)):
+    st.markdown(f"**Alloy {i + 1}:**")
+    st.write(f"Composition: {alloy_names[i]}")
+    # Mapping the process name to its description
+    detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
+    st.write(f"Process Method: {detailed_process_name}")
+    st.write(
+        f"Predicted phase: {phase_name_list[i]}")
+    st.write(
+        f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
 
