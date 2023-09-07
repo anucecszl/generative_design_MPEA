@@ -8,6 +8,7 @@ from pymoo.operators.mutation.pm import PM
 from pymoo.termination import get_termination
 from joblib import load
 from torch import nn
+import base64
 import torch
 import streamlit as st
 import matplotlib.pyplot as plt
