@@ -202,38 +202,38 @@ if start_optimization:
         ax2.set_title("Yield strength vs Elongation")
         st.pyplot(fig2)
 
-       # save the result to DataFrame
-        result_df = pd.DataFrame({
-            'Alloy Composition': alloy_names,
-            'Processing Method': [process_name_mapping.get(process_name_list[i], "Unknown") for i in range(len(alloy_names))],
-            'Predicted Phase': phase_name_list,
-            'Hardness HV': property_array[:, 3],
-            'Tensile Strength MPa': property_array[:, 1],
-            'Yield Strength MPa': property_array[:, 2],
-            'Elongation %': property_array[:, 0]
-        })
+# save the result to DataFrame
+result_df = pd.DataFrame({
+    'Alloy Composition': alloy_names,
+    'Processing Method': [process_name_mapping.get(process_name_list[i], "Unknown") for i in range(len(alloy_names))],
+    'Predicted Phase': phase_name_list,
+    'Hardness HV': property_array[:, 3],
+    'Tensile Strength MPa': property_array[:, 1],
+    'Yield Strength MPa': property_array[:, 2],
+    'Elongation %': property_array[:, 0]
+})
 
-        # create the download button
-        if st.button("Download Results as Excel") and st.session_state.result_df is not None:
-            output_path = "optimization_results.xlsx"
-            st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
+# create the download button
+if st.button("Download Results as Excel") and st.session_state.result_df is not None:
+    output_path = "optimization_results.xlsx"
+    st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
     
-            with open(output_path, "rb") as f:
-                bytes = f.read()
-                b64 = base64.b64encode(bytes).decode()
-                href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
-                st.markdown(href, unsafe_allow_html=True)
+    with open(output_path, "rb") as f:
+        bytes = f.read()
+        b64 = base64.b64encode(bytes).decode()
+        href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
+        st.markdown(href, unsafe_allow_html=True)
         
-        # Display the results
-        st.subheader("Optimal Alloys:")
-        for i in range(len(alloy_names)):
-            st.markdown(f"**Alloy {i + 1}:**")
-            st.write(f"Composition: {alloy_names[i]}")
-            # Mapping the process name to its description
-            detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
-            st.write(f"Process Method: {detailed_process_name}")
-            st.write(
-                f"Predicted phase: {phase_name_list[i]}")
-            st.write(
-                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
+# Display the results
+st.subheader("Optimal Alloys:")
+for i in range(len(alloy_names)):
+    st.markdown(f"**Alloy {i + 1}:**")
+    st.write(f"Composition: {alloy_names[i]}")
+    # Mapping the process name to its description
+    detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
+    st.write(f"Process Method: {detailed_process_name}")
+    st.write(
+        f"Predicted phase: {phase_name_list[i]}")
+    st.write(
+        f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
 
