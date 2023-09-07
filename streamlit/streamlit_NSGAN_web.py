@@ -215,6 +215,9 @@ if start_optimization:
             'Elongation %': property_array[:, 0]
         })
 
+        # Store the result_df in the session state
+        st.session_state.result_df = result_df
+
         # create the download button
         if st.button("Download Results as Excel") and st.session_state.result_df is not None:
             output_path = "optimization_results.xlsx"
