@@ -76,7 +76,7 @@ cols = st.columns(3)
 # Assign each input to a different column
 pop_size = cols[0].number_input("Population Size", min_value=10, max_value=50, value=20)
 n_gen = cols[1].number_input("Number of Generations", min_value=5, max_value=500, value=100)
-seed_value = cols[2].number_input("Random Seed Value", min_value=0, max_value=None, value=1)
+seed_value = cols[2].number_input("Random Seed Value", min_value=0, max_value=None, value=2)
 
 start_optimization = st.button("Start Optimization")
 
