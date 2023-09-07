@@ -80,6 +80,10 @@ seed_value = cols[2].number_input("Random Seed Value", min_value=0, max_value=No
 
 start_optimization = st.button("Start Optimization")
 
+# 检查session_state中是否存在结果DataFrame
+if "result_df" not in st.session_state:
+    st.session_state.result_df = None
+    
 if start_optimization:
     with st.spinner('Optimizing...'):
         # Load data and models
@@ -210,10 +214,10 @@ if start_optimization:
         })
 
         # create the download button
-        if st.button("Download Results as Excel"):
+        if st.button("Download Results as Excel") and st.session_state.result_df is not None:
             output_path = "optimization_results.xlsx"
-            result_df.to_excel(output_path, index=False, engine='openpyxl')
-            
+            st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
+    
             with open(output_path, "rb") as f:
                 bytes = f.read()
                 b64 = base64.b64encode(bytes).decode()
