@@ -57,8 +57,9 @@ class AlloyOptimizationProblem(Problem):
         out["F"] = np.column_stack([f1, f2])
 
 
-st.markdown("<h3 style='text-align: center; color: black;'>Multi Principle Element Alloy Generation and Property Prediction</h3>",
-            unsafe_allow_html=True)
+st.markdown(
+    "<h3 style='text-align: center; color: black;'>Multi Principle Element Alloy Generation and Property Prediction</h3>",
+    unsafe_allow_html=True)
 st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
 to generate optimized element compositions, processing conditions, 
@@ -84,7 +85,7 @@ start_optimization = st.button("Start Optimization")
 # 检查session_state中是否存在结果DataFrame
 if "result_df" not in st.session_state:
     st.session_state.result_df = None
-    
+
 if start_optimization:
     with st.spinner('Optimizing...'):
         # Load data and models
@@ -215,30 +216,23 @@ if start_optimization:
             'Elongation %': property_array[:, 0]
         })
 
-        # Store the result_df in the session state
         st.session_state.result_df = result_df
 
-        # create the download button
-        if st.button("Download Results as Excel") and st.session_state.result_df is not None:
-            output_path = "optimization_results.xlsx"
-            st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
-
-            with open(output_path, "rb") as f:
-                bytes = f.read()
-                b64 = base64.b64encode(bytes).decode()
-                href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
-                st.markdown(href, unsafe_allow_html=True)
+        output_path = "optimization_results.xlsx"
+        st.session_state.result_df.to_excel(output_path, index=False, engine='openpyxl')
+        with open(output_path, "rb") as f:
+            bytes = f.read()
+            b64 = base64.b64encode(bytes).decode()
+            href = f'<a href="data:file/xlsx;base64,{b64}" download="{output_path}">Download Excel File</a>'
+            st.markdown(href, unsafe_allow_html=True)
 
         # Display the results
         st.subheader("Optimal Alloys:")
         for i in range(len(alloy_names)):
             st.markdown(f"**Alloy {i + 1}:**")
             st.write(f"Composition: {alloy_names[i]}")
-            # Mapping the process name to its description
             detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
             st.write(f"Process Method: {detailed_process_name}")
-            st.write(
-                f"Predicted phase: {phase_name_list[i]}")
+            st.write(f"Predicted phase: {phase_name_list[i]}")
             st.write(
                 f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
-
