@@ -56,7 +56,7 @@ class AlloyOptimizationProblem(Problem):
         out["F"] = np.column_stack([f1, f2])
 
 
-st.markdown("<h3 style='text-align: center; color: black;'>Multi Principle Element Alloy Generation and Property Prediction</h1>",
+st.markdown("<h3 style='text-align: center; color: black;'>Multi Principle Element Alloy Generation and Property Prediction</h3>",
             unsafe_allow_html=True)
 st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
