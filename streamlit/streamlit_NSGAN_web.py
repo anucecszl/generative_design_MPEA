@@ -63,6 +63,7 @@ This online tool employs the NSGAN model (non-dominant sorting optimization-base
 to generate optimized element compositions, processing conditions, 
 and predicted phase and mechanical properties (including hardness, tensile strength, yield strength, elongation) for 
 multi-principle element alloys. 
+
 The "Population Size" specifies the number of candidate solutions explored in each 
 generation and impacts the diversity of solutions; the "Number of Generations" indicates how many iterative cycles 
 the algorithm will undergo, influencing the quality and convergence of solutions; and the "Random Seed Value" is 
