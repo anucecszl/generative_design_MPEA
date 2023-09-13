@@ -86,9 +86,10 @@ st.markdown(
 st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
 to generate optimized element compositions, processing conditions, 
-and predicted phase and mechanical properties for 
-multi-principle element alloys. The model conducts multi-objective optimization based on tensile strength, yield 
-strength, and elongation to refine the population of solutions.
+and predicted phase and mechanical properties (including hardness, tensile strength, yield 
+strength, and elongation) for 
+multi-principle element alloys. The model conducts multi-objective optimization based on predicted mechanical properties 
+and phase to refine the population of solutions.
 
 The "Population Size" specifies the number of candidate solutions explored in each 
 generation and impacts the diversity of solutions; the "Number of Generations" indicates how many iterative cycles 
@@ -99,7 +100,7 @@ ArXiv paper can be access at: 'link'
 
 # Add the selection box with default values for tensile and elongation
 objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Hardness', 'FCC', 'BCC', 'HCP', 'IM']
-selected_objectives = st.multiselect('Choose two objectives for optimization:', objective_choices,
+selected_objectives = st.multiselect('Choose objectives for optimization:', objective_choices,
                                      default=['Tensile Strength', 'Elongation'])
 
 # Create a layout with three columns
