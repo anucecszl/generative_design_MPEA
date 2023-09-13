@@ -13,6 +13,14 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import base64
 
+masses = [107.8682, 26.9815386, 10.811, 12.0107, 40.078, 58.933195, 51.9961, 63.546, 55.845, 69.723, 72.64,
+          178.49, 6.941, 24.305, 54.938045, 95.94, 14.0067, 92.90638, 144.242, 58.6934, 106.42, 186.207,
+          44.955912, 28.0855, 118.71, 180.94788, 47.867, 50.9415, 183.84, 88.90585, 65.409, 91.224]
+
+volumes = [10.27, 10.0, 4.39, 5.29, 26.2, 6.67, 7.23, 7.11, 7.09, 11.8, 13.63, 13.44, 13.02, 14.0, 7.35, 9.38,
+           13.54, 10.83, 20.59, 6.59, 8.56, 8.86, 15.0, 12.06, 16.29, 10.85, 10.64, 8.32, 9.47, 19.88, 9.16,
+           14.02]
+
 # Define process name to description mapping
 process_name_mapping = {
     'process_1': "As-cast processes, inclusive of 'arc-melted'",
@@ -64,19 +72,24 @@ class AlloyOptimizationProblem(Problem):
             fake_alloys = generator(x_tensor).numpy()
         fake_alloys = fake_alloys * comp_max + comp_min
 
-        # Map the selected objectives to the respective regressors
-        objective_regressors = {
-            'Tensile Strength': tensile_regressor,
-            'Elongation': elongation_regressor,
-            'Yield Strength': yield_regressor,
-            'Hardness': hard_regressor,
-            'FCC': classifier_FCC,
-            'BCC': classifier_BCC,
-            'HCP': classifier_HCP,
-            'IM': classifier_IM
+        # Calculate density for each fake alloy
+        densities = np.sum(fake_alloys[:, :32] * masses, axis=1) / np.sum(fake_alloys[:, :32] * volumes, axis=1)
+
+        # Map the selected objectives to the respective regressors or values
+        objective_values = {
+            'Tensile Strength': tensile_regressor.predict(fake_alloys),
+            'Elongation': elongation_regressor.predict(fake_alloys),
+            'Yield Strength': yield_regressor.predict(fake_alloys),
+            'Hardness': hard_regressor.predict(fake_alloys),
+            'FCC': classifier_FCC.predict(fake_alloys),
+            'BCC': classifier_BCC.predict(fake_alloys),
+            'HCP': classifier_HCP.predict(fake_alloys),
+            'IM': classifier_IM.predict(fake_alloys),
+            'Density': -densities  # using negative to keep consistency with other objectives
         }
 
-        f_values = [-objective_regressors[obj].predict(fake_alloys) for obj in self.selected_objectives]
+        f_values = [-objective_values[obj] for obj in self.selected_objectives]
+
         out["F"] = np.column_stack(f_values)
 
 
