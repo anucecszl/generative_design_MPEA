@@ -116,7 +116,7 @@ ArXiv paper can be access at: 'link'
 """)
 
 # Add the selection box with default values for tensile and elongation
-objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Density', 'Hardness', 'FCC', 'BCC', 'HCP',
+objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Hardness', 'Density', 'FCC', 'BCC', 'HCP',
                      'IM', 'Aluminum content']
 selected_objectives = st.multiselect('Choose objectives for optimization:', objective_choices,
                                      default=['Tensile Strength', 'Elongation', 'FCC'])
