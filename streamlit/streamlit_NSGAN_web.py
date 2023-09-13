@@ -75,6 +75,9 @@ class AlloyOptimizationProblem(Problem):
         # Calculate density for each fake alloy
         densities = np.sum(fake_alloys[:, :32] * masses, axis=1) / np.sum(fake_alloys[:, :32] * volumes, axis=1)
 
+        # Extract Al molar ratio
+        Al_ratio = fake_alloys[:, 1]
+
         # Map the selected objectives to the respective regressors or values
         objective_values = {
             'Tensile Strength': tensile_regressor.predict(fake_alloys),
@@ -85,7 +88,8 @@ class AlloyOptimizationProblem(Problem):
             'BCC': classifier_BCC.predict(fake_alloys),
             'HCP': classifier_HCP.predict(fake_alloys),
             'IM': classifier_IM.predict(fake_alloys),
-            'Density': -densities  # using negative to keep consistency with other objectives
+            'Density': -densities,  # using negative to keep consistency with other objectives
+            'Al Molar Ratio': Al_ratio  # assuming you want to maximize this, hence the negative sign
         }
 
         f_values = [-objective_values[obj] for obj in self.selected_objectives]
@@ -113,7 +117,7 @@ ArXiv paper can be access at: 'link'
 
 # Add the selection box with default values for tensile and elongation
 objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Density', 'Hardness', 'FCC', 'BCC', 'HCP',
-                     'IM']
+                     'IM', 'Aluminium molar ratio']
 selected_objectives = st.multiselect('Choose objectives for optimization:', objective_choices,
                                      default=['Tensile Strength', 'Elongation', 'FCC'])
 
