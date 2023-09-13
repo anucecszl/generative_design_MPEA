@@ -280,8 +280,8 @@ if start_optimization:
             st.write(f"Composition: {alloy_names[i]}")
             detailed_process_name = process_name_mapping.get(process_name_list[i], "Unknown")
             st.write(f"Process Method: {detailed_process_name}")
+            st.write(f"Density: {property_array[i][4]: .2f} g/cm³")
             st.write(f"Predicted phase: {phase_name_list[i]}")
             st.write(
-                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %, Density: {property_array[i][4]:.2f} g/cm³"
+                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} % "
             )
-
