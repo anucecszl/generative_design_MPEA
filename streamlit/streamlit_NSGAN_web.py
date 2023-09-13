@@ -89,7 +89,7 @@ class AlloyOptimizationProblem(Problem):
             'HCP': classifier_HCP.predict(fake_alloys),
             'IM': classifier_IM.predict(fake_alloys),
             'Density': -densities,  # using negative to keep consistency with other objectives
-            'Aluminum content': Al_ratio  # assuming you want to maximize this, hence the negative sign
+            'Aluminum Content': Al_ratio  # assuming you want to maximize this, hence the negative sign
         }
 
         f_values = [-objective_values[obj] for obj in self.selected_objectives]
@@ -117,7 +117,7 @@ ArXiv paper can be access at: 'link'
 
 # Add the selection box with default values for tensile and elongation
 objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Hardness', 'Density', 'FCC', 'BCC', 'HCP',
-                     'IM', 'Aluminum content']
+                     'IM', 'Aluminum Content']
 selected_objectives = st.multiselect('Choose objectives for optimization:', objective_choices,
                                      default=['Tensile Strength', 'Elongation', 'FCC'])
 
