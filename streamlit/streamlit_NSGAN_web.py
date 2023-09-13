@@ -140,8 +140,8 @@ if start_optimization:
         elongation_regressor = load('streamlit/elongation_regressor.joblib')
         hard_regressor = load('streamlit/hardness_regressor.joblib')
 
-        # Optimize
-        problem = AlloyOptimizationProblem()
+        # Use the modified problem class and pass the selected objectives
+        problem = AlloyOptimizationProblem(selected_objectives)
         algorithm = NSGA2(pop_size=pop_size, mutation=PM(prob=0.1, eta=20))
         termination = get_termination("n_gen", n_gen)
 
