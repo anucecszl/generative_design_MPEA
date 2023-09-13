@@ -89,7 +89,7 @@ class AlloyOptimizationProblem(Problem):
             'HCP': classifier_HCP.predict(fake_alloys),
             'IM': classifier_IM.predict(fake_alloys),
             'Density': -densities,  # using negative to keep consistency with other objectives
-            'Al Molar Ratio': Al_ratio  # assuming you want to maximize this, hence the negative sign
+            'Aluminum content': Al_ratio  # assuming you want to maximize this, hence the negative sign
         }
 
         f_values = [-objective_values[obj] for obj in self.selected_objectives]
