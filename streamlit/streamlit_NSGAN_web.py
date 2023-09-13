@@ -196,11 +196,16 @@ if start_optimization:
                     process_one_hot[i][j] = 1
         optimal_alloys[:, 32:] = process_one_hot
 
-        property_array = np.zeros((optimal_alloys.shape[0], 4))
+        # Calculate density for each optimal alloy
+        densities = np.sum(optimal_alloys[:, :32] * masses, axis=1) / np.sum(optimal_alloys[:, :32] * volumes, axis=1)
+
+        # Create the property_array and populate it
+        property_array = np.zeros((optimal_alloys.shape[0], 5))
         property_array[:, 0] = elongation_regressor.predict(optimal_alloys)
         property_array[:, 1] = tensile_regressor.predict(optimal_alloys)
         property_array[:, 2] = yield_regressor.predict(optimal_alloys)
         property_array[:, 3] = hard_regressor.predict(optimal_alloys)
+        property_array[:, 4] = densities
 
         process_name_list = []
         for i in range(len(optimal_alloys)):
@@ -254,7 +259,8 @@ if start_optimization:
             'Hardness HV': property_array[:, 3],
             'Tensile Strength MPa': property_array[:, 1],
             'Yield Strength MPa': property_array[:, 2],
-            'Elongation %': property_array[:, 0]
+            'Elongation %': property_array[:, 0],
+            'Density g/cm³': property_array[:, 4]
         })
 
         st.session_state.result_df = result_df
@@ -276,4 +282,6 @@ if start_optimization:
             st.write(f"Process Method: {detailed_process_name}")
             st.write(f"Predicted phase: {phase_name_list[i]}")
             st.write(
-                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
+                f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %, Density: {property_array[i][4]:.2f} g/cm³"
+            )
+
