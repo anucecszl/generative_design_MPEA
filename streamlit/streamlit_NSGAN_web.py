@@ -24,6 +24,15 @@ process_name_mapping = {
     'process_7': "Cryogenic treatments"
 }
 
+classifier_FCC = load('streamlit/FCC_classifier.joblib')
+classifier_BCC = load('streamlit/BCC_classifier.joblib')
+classifier_HCP = load('streamlit/HCP_classifier.joblib')
+classifier_IM = load('streamlit/IM_classifier.joblib')
+yield_regressor = load('streamlit/yield_regressor.joblib')
+tensile_regressor = load('streamlit/tensile_regressor.joblib')
+elongation_regressor = load('streamlit/elongation_regressor.joblib')
+hard_regressor = load('streamlit/hardness_regressor.joblib')
+
 
 # Define the Generator network
 class Generator(nn.Module):
@@ -44,17 +53,31 @@ class Generator(nn.Module):
 
 
 class AlloyOptimizationProblem(Problem):
-    def __init__(self):
-        super().__init__(n_var=10, n_obj=2, xl=-3, xu=3)
+    def __init__(self, selected_objectives):
+        n_obj = len(selected_objectives)
+        super().__init__(n_var=10, n_obj=n_obj, xl=-3, xu=3)
+        self.selected_objectives = selected_objectives
 
     def _evaluate(self, x, out, *args, **kwargs):
         x_tensor = torch.tensor(x, dtype=torch.float32)
         with torch.no_grad():
             fake_alloys = generator(x_tensor).numpy()
         fake_alloys = fake_alloys * comp_max + comp_min
-        f1 = - tensile_regressor.predict(fake_alloys)
-        f2 = - elongation_regressor.predict(fake_alloys)
-        out["F"] = np.column_stack([f1, f2])
+
+        # Map the selected objectives to the respective regressors
+        objective_regressors = {
+            'Tensile Strength': tensile_regressor,
+            'Elongation': elongation_regressor,
+            'Yield Strength': yield_regressor,
+            'Hardness': hard_regressor,
+            'FCC': classifier_FCC,
+            'BCC': classifier_BCC,
+            'HCP': classifier_HCP,
+            'IM': classifier_IM
+        }
+
+        f_values = [-objective_regressors[obj].predict(fake_alloys) for obj in self.selected_objectives]
+        out["F"] = np.column_stack(f_values)
 
 
 st.markdown(
@@ -63,7 +86,7 @@ st.markdown(
 st.markdown("""
 This online tool employs the NSGAN model (non-dominant sorting optimization-based generative adversarial network) 
 to generate optimized element compositions, processing conditions, 
-and predicted phase and mechanical properties (including hardness, tensile strength, yield strength, elongation) for 
+and predicted phase and mechanical properties for 
 multi-principle element alloys. The model conducts multi-objective optimization based on tensile strength, yield 
 strength, and elongation to refine the population of solutions.
 
@@ -73,6 +96,12 @@ the algorithm will undergo, influencing the quality and convergence of solutions
 utilized to initialize the random number generator, allowing for reproducibility in the optimization process. The 
 ArXiv paper can be access at: 'link'
 """)
+
+# Add the selection box with default values for tensile and elongation
+objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Hardness', 'FCC', 'BCC', 'HCP', 'IM']
+selected_objectives = st.multiselect('Choose two objectives for optimization:', objective_choices,
+                                     default=['Tensile Strength', 'Elongation'])
+
 # Create a layout with three columns
 cols = st.columns(3)
 
@@ -164,10 +193,6 @@ if start_optimization:
 
         # Predict phases and mechanical properties for generated alloys
         phase_array = np.zeros((optimal_alloys.shape[0], 4))
-        classifier_FCC = load('streamlit/FCC_classifier.joblib')
-        classifier_BCC = load('streamlit/BCC_classifier.joblib')
-        classifier_HCP = load('streamlit/HCP_classifier.joblib')
-        classifier_IM = load('streamlit/IM_classifier.joblib')
 
         phase_array[:, 0] = classifier_FCC.predict(optimal_alloys)
         phase_array[:, 1] = classifier_BCC.predict(optimal_alloys)

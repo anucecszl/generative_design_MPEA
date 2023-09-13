@@ -23,6 +23,19 @@ process_name_mapping = {
     'process_7': "Cryogenic treatments"
 }
 
+classifier_FCC = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\FCC_classifier.joblib')
+classifier_BCC = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\BCC_classifier.joblib')
+classifier_HCP = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\HCP_classifier.joblib')
+classifier_IM = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\IM_classifier.joblib')
+yield_regressor = load(
+    r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\yield_regressor.joblib')
+tensile_regressor = load(
+    r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\tensile_regressor.joblib')
+elongation_regressor = load(
+    r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\elongation_regressor.joblib')
+hard_regressor = load(
+    r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\hardness_regressor.joblib')
+
 
 # Define the Generator network
 class Generator(nn.Module):
@@ -43,17 +56,31 @@ class Generator(nn.Module):
 
 
 class AlloyOptimizationProblem(Problem):
-    def __init__(self):
-        super().__init__(n_var=10, n_obj=2, xl=-3, xu=3)
+    def __init__(self, selected_objectives):
+        n_obj = len(selected_objectives)
+        super().__init__(n_var=10, n_obj=n_obj, xl=-3, xu=3)
+        self.selected_objectives = selected_objectives
 
     def _evaluate(self, x, out, *args, **kwargs):
         x_tensor = torch.tensor(x, dtype=torch.float32)
         with torch.no_grad():
             fake_alloys = generator(x_tensor).numpy()
         fake_alloys = fake_alloys * comp_max + comp_min
-        f1 = - tensile_regressor.predict(fake_alloys)
-        f2 = - elongation_regressor.predict(fake_alloys)
-        out["F"] = np.column_stack([f1, f2])
+
+        # Map the selected objectives to the respective regressors
+        objective_regressors = {
+            'Tensile Strength': tensile_regressor,
+            'Elongation': elongation_regressor,
+            'Yield Strength': yield_regressor,
+            'Hardness': hard_regressor,
+            'FCC': classifier_FCC,
+            'BCC': classifier_BCC,
+            'HCP': classifier_HCP,
+            'IM': classifier_IM
+        }
+
+        f_values = [-objective_regressors[obj].predict(fake_alloys) for obj in self.selected_objectives]
+        out["F"] = np.column_stack(f_values)
 
 
 st.markdown("<h3 style='text-align: center; color: black;'>Alloy Generation and Property Prediction</h1>",
@@ -64,6 +91,12 @@ to generate optimized element compositions, processing conditions,
 and predicted phase and mechanical properties (including hardness, tensile strength, yield strength, elongation) for 
 multi-principle element alloys. 
 """)
+
+# Add the selection box with default values for tensile and elongation
+objective_choices = ['Tensile Strength', 'Elongation', 'Yield Strength', 'Hardness', 'FCC', 'BCC', 'HCP', 'IM']
+selected_objectives = st.multiselect('Choose two objectives for optimization:', objective_choices,
+                                     default=['Tensile Strength', 'Elongation'])
+
 # Create a layout with three columns
 cols = st.columns(3)
 
@@ -97,17 +130,8 @@ if start_optimization:
             r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\generator_net_MPEA.pt'))
         generator.eval()
 
-        yield_regressor = load(
-            r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\yield_regressor.joblib')
-        tensile_regressor = load(
-            r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\tensile_regressor.joblib')
-        elongation_regressor = load(
-            r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\elongation_regressor.joblib')
-        hard_regressor = load(
-            r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\hardness_regressor.joblib')
-
-        # Optimize
-        problem = AlloyOptimizationProblem()
+        # Use the modified problem class and pass the selected objectives
+        problem = AlloyOptimizationProblem(selected_objectives)
         algorithm = NSGA2(pop_size=pop_size, mutation=PM(prob=0.1, eta=20))
         termination = get_termination("n_gen", n_gen)
 
@@ -159,10 +183,6 @@ if start_optimization:
 
         # Predict phases and mechanical properties for generated alloys
         phase_array = np.zeros((optimal_alloys.shape[0], 4))
-        classifier_FCC = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\FCC_classifier.joblib')
-        classifier_BCC = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\BCC_classifier.joblib')
-        classifier_HCP = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\HCP_classifier.joblib')
-        classifier_IM = load(r'C:\Users\25863\PycharmProjects\generative_design_MPEA\streamlit\IM_classifier.joblib')
 
         phase_array[:, 0] = classifier_FCC.predict(optimal_alloys)
         phase_array[:, 1] = classifier_BCC.predict(optimal_alloys)
@@ -212,4 +232,3 @@ if start_optimization:
                 f"Predicted phase: {phase_name_list[i]}")
             st.write(
                 f"Hardness: {property_array[i][3]:.2f} HV, Tensile strength: {property_array[i][1]:.2f} MPa, Yield strength: {property_array[i][2]:.2f} MPa, Elongation: {property_array[i][0]:.2f} %")
-
