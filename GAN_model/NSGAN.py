@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 import numpy as np
 from pymoo.optimize import minimize
 from pymoo.core.problem import Problem
@@ -9,18 +9,18 @@ from joblib import load
 import WGAN_GP
 import torch
 
-dataset_df = pandas.read_excel('../dataset/MPEA_parsed_dataset.xlsx')
+# Load and process dataset
+dataset_df = pd.read_excel('../dataset/MPEA_parsed_dataset.xlsx')
 element_names = dataset_df.columns.values[14:46]
 process_names = dataset_df.columns.values[46:53]
 feature_names = dataset_df.columns.values[14:53]
 
 data_np = dataset_df.to_numpy()
-# identify the features of the alloys.
 comp_data = data_np[:, 14:53].astype(float)
 comp_min = np.min(comp_data, axis=0)
 comp_max = np.max(comp_data, axis=0)
 
-
+# Load pre-trained generator and evaluators
 generator = WGAN_GP.Generator()
 generator.load_state_dict(torch.load('../saved_models/generator_net_MPEA.pt'))
 generator.eval()
@@ -31,17 +31,17 @@ tensile_regressor = load('../saved_models/tensile_regressor.joblib')
 elongation_regressor = load('../saved_models/elongation_regressor.joblib')
 
 
+# Define the optimization problem for alloy design
 class AlloyOptimizationProblem(Problem):
     def __init__(self):
         super().__init__(n_var=10, n_obj=3, xl=-3, xu=3)
 
     def _evaluate(self, x, out, *args, **kwargs):
         x_tensor = torch.tensor(x, dtype=torch.float32)
-
         with torch.no_grad():
             fake_alloys = generator(x_tensor).numpy()
 
-        fake_alloys = fake_alloys * comp_max + comp_min
+        fake_alloys = (fake_alloys * comp_max) + comp_min
 
         f1 = - tensile_regressor.predict(fake_alloys)
         f2 = - hard_regressor.predict(fake_alloys)
@@ -49,72 +49,52 @@ class AlloyOptimizationProblem(Problem):
         out["F"] = np.column_stack([f1, f2, f3])
 
 
+# Run optimization
 problem = AlloyOptimizationProblem()
 algorithm = NSGA2(pop_size=100, mutation=PM(prob=0.1, eta=20))
 termination = get_termination("n_gen", 200)
 
-res = minimize(problem,
-               algorithm,
-               termination,
-               pf=problem.pareto_front(), save_history=True,
-               seed=3,
-               verbose=False)
+res = minimize(problem, algorithm, termination, pf=problem.pareto_front(), save_history=True, seed=3, verbose=False)
 
+# Post-process results to compute optimal alloys
 result_tensor = torch.tensor(res.X, dtype=torch.float32)
 with torch.no_grad():
     optimal_alloys = generator(result_tensor).numpy()
-optimal_alloys = optimal_alloys * comp_max + comp_min
+optimal_alloys = (optimal_alloys * comp_max) + comp_min
 
-optimal_alloys[:, :32] = optimal_alloys[:, :32] / np.sum(optimal_alloys[:, :32], axis=1).reshape((-1, 1))
+# Normalize molar ratios
+optimal_alloys[:, :32] /= np.sum(optimal_alloys[:, :32], axis=1).reshape((-1, 1))
 
-# create a list for the generated alloys' name
+# Generate alloy names based on composition
 alloy_names = []
 for i in range(optimal_alloys.shape[0]):
     composition = optimal_alloys[i, :32]
-    comp_string = ''
-    element_list = []
-    ratio_list = []
-    for j in range(len(composition)):
-        # only keep the molar ratio > 0.005
-        if composition[j] > 0.005:
-            comp_string += element_names[j]
-            comp_string += str(round(composition[j], 3))
-            element_list.append(element_names[j])
-            ratio_list.append(composition[j])
-        else:
-            composition[j] = 0
-    alloy_names.append(comp_string)
+    alloy_name = "".join(
+        [element_names[j] + str(round(composition[j], 3)) for j in range(len(composition)) if composition[j] > 0.005])
+    alloy_names.append(alloy_name)
 
+# Convert process index to one-hot encoding
 process_indices = np.argmax(optimal_alloys[:, 32:], axis=1)
-process_one_hot = np.zeros_like(optimal_alloys[:, 32:])
-for i in range(len(process_one_hot)):
-    for j in range(len(process_one_hot[i])):
-        if process_indices[i] == j:
-            process_one_hot[i][j] = 1
-optimal_alloys[:, 32:] = process_one_hot
+optimal_alloys[:, 32:] = np.eye(optimal_alloys.shape[1] - 32)[process_indices]
 
-property_array = np.zeros((optimal_alloys.shape[0], 4))
-property_array[:, 0] = elongation_regressor.predict(optimal_alloys)
-property_array[:, 1] = tensile_regressor.predict(optimal_alloys)
-property_array[:, 2] = yield_regressor.predict(optimal_alloys)
-property_array[:, 3] = hard_regressor.predict(optimal_alloys)
+# Calculate properties for optimal alloys
+property_array = np.column_stack([
+    elongation_regressor.predict(optimal_alloys),
+    tensile_regressor.predict(optimal_alloys),
+    yield_regressor.predict(optimal_alloys),
+    hard_regressor.predict(optimal_alloys)
+])
 
-process_name_list = []
-for i in range(len(optimal_alloys)):
-    process_name_list.append(process_names[process_indices[i]])
+process_name_list = [process_names[i] for i in process_indices]
 
-formula_df = pandas.DataFrame(zip(alloy_names, process_name_list),
-                              columns=['Composition', 'Processing method'])
+# Convert data to dataframe and export
+formula_df = pd.DataFrame(zip(alloy_names, process_name_list), columns=['Composition', 'Processing method'])
+property_df = pd.DataFrame(property_array, columns=['Elongation', 'Tensile', 'Yield', 'Hardness'])
+feature_df = pd.DataFrame(optimal_alloys, columns=feature_names)
 
-property_df = pandas.DataFrame(property_array, columns=['Elongation', 'Tensile', 'Yield', 'Hardness'])
-feature_df = pandas.DataFrame(optimal_alloys, columns=list(feature_names))
-# convert the data into pandas dataframe and output
-output_df = pandas.concat([formula_df, property_df, feature_df], axis=1)
-
+output_df = pd.concat([formula_df, property_df, feature_df], axis=1)
 output_df.to_excel('../generated_datasets/generated_NSGAN.xlsx', index=False)
 
-gene_df = pandas.DataFrame(res.X,
-                           columns=['gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7', 'gene8', 'gene9',
-                                    'gene10', ])
-gene_mapping_df = pandas.concat([gene_df, formula_df, property_df], axis=1)
+gene_df = pd.DataFrame(res.X, columns=['gene{}'.format(i) for i in range(1, 11)])
+gene_mapping_df = pd.concat([gene_df, formula_df, property_df], axis=1)
 gene_mapping_df.to_excel('../generated_datasets/NSGAN_mapping.xlsx', index=False)

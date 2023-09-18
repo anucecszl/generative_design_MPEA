@@ -62,6 +62,3 @@ if __name__ == "__main__":
     for i in range(len(mechanical_properties)):
         mechanical_property = mechanical_properties[i]
         train_and_evaluate_regressor(mechanical_property, split, rand_dataset)
-
-
-
