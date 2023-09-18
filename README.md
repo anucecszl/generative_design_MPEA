@@ -3,7 +3,8 @@
 ## Overview
 This repository demonstrates the application of Non-Dominant Sorting Generative Adversarial Networks (NSGAN) in the generative design of multi-principle element alloys (MPEA). NSGAN, an innovative generative design framework, synergistically merges the data generation abilities of Generative Adversarial Networks (GAN) with the multi-objective optimization capabilities of the NSGA-II algorithm. Drawing from a comprehensive dataset including characteristics of 1704 MPEAs, this repository presents the complete workflow for applying the proposed framework and the code for an online application built upon the trained NSGAN model, which is developed using Streamlit, a renowned open-source Python library tailored for crafting interactive web applications. This interface facilitates tailored selection of optimization objectives to generate MPEA samples. It allows users to adjust and amalgamate the parameters and objectives to achieve specific desired results. The application is accessible at: https://generativedesignmpea.streamlit.app/.
 
-![image](https://github.com/anucecszl/generative_design_MPEA/assets/51730485/145b99ea-6a1c-4d67-a610-e86887e8368e)
+![image](https://github.com/anucecszl/generative_design_MPEA/assets/51730485/a5927f07-b49a-43e1-a65c-726527c74aae)
+
 
 
 ## Repository Structure
