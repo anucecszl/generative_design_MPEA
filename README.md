@@ -23,7 +23,7 @@ This repository demonstrates the application of Non-Dominant Sorting Generative 
 - `saved_models/`: Folder housing trained machine learning models.
 
 ### Generative Models
-- `GAN_models/`: Code implementations of both GAN and NSGAN models: `NSGAN.py`, 'WGAN_GP.py`.
+- `GAN_models/`: Code implementations of both GAN and NSGAN models: `NSGAN.py`, `WGAN_GP.py`.
 
 ### Online Application
 - `streamlit/`: Implementation of the online application crafted using the Streamlit library.
